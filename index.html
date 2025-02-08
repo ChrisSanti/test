@@ -3,107 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retiros del Mes</title>
+    <title>Reporte de Retiros</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid black; padding: 10px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        textarea { width: 100%; }
-        canvas { max-width: 600px; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        input, button { padding: 10px; margin: 5px; }
     </style>
 </head>
 <body>
-    <h2>Retiros Reportados del Mes</h2>
-    <label for="filtroFecha">Filtrar por fecha:</label>
-    <input type="date" id="filtroFecha" onchange="filtrarPorFecha()">
+    <h2>Registro de Retiros</h2>
+    <label>Monto: <input type="number" id="monto" required></label>
+    <label>Fecha: <input type="date" id="fecha" required></label>
+    <label>Observaciones: <input type="text" id="observaciones"></label>
+    <button onclick="agregarRetiro()">Agregar Retiro</button>
+    
     <table>
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Fecha</th>
-                <th>Fecha de Registro</th>
                 <th>Monto</th>
+                <th>Fecha</th>
                 <th>Observaciones</th>
             </tr>
         </thead>
-        <tbody id="retirosBody">
-            <tr>
-                <td>1</td>
-                <td>2025-02-07</td>
-                <td>2025-02-01</td>
-                <td>500</td>
-                <td><textarea onchange="guardarObservacion(1, this.value)"></textarea></td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>2025-02-06</td>
-                <td>2025-02-02</td>
-                <td>750</td>
-                <td><textarea onchange="guardarObservacion(2, this.value)"></textarea></td>
-            </tr>
-        </tbody>
+        <tbody id="tabla-retiros"></tbody>
     </table>
-
-    <button onclick="exportarCSV()">Exportar a CSV</button>
-
-    <canvas id="retirosChart"></canvas>
-
+    
+    <canvas id="graficoRetiros" width="400" height="200"></canvas>
+    
     <script>
-        function guardarObservacion(id, observacion) {
-            localStorage.setItem(`observacion_${id}`, observacion);
-            alert("Observación guardada");
+        let retiros = [];
+        
+        function agregarRetiro() {
+            let monto = document.getElementById('monto').value;
+            let fecha = document.getElementById('fecha').value;
+            let observaciones = document.getElementById('observaciones').value;
+            
+            if (monto && fecha) {
+                retiros.push({ monto: parseFloat(monto), fecha, observaciones });
+                actualizarTabla();
+                actualizarGrafico();
+                document.getElementById('monto').value = '';
+                document.getElementById('fecha').value = '';
+                document.getElementById('observaciones').value = '';
+            } else {
+                alert("Por favor, completa todos los campos requeridos.");
+            }
         }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            document.querySelectorAll("textarea").forEach((textarea, index) => {
-                const id = index + 1;
-                const obsGuardada = localStorage.getItem(`observacion_${id}`);
-                if (obsGuardada) textarea.value = obsGuardada;
-            });
-            actualizarGrafico();
-        });
-
-        function filtrarPorFecha() {
-            const filtro = document.getElementById("filtroFecha").value;
-            document.querySelectorAll("tbody tr").forEach(row => {
-                const fecha = row.cells[1].textContent;
-                row.style.display = fecha === filtro || filtro === "" ? "" : "none";
+        
+        function actualizarTabla() {
+            let tabla = document.getElementById('tabla-retiros');
+            tabla.innerHTML = '';
+            retiros.forEach(ret => {
+                let fila = `<tr><td>${ret.monto}</td><td>${ret.fecha}</td><td>${ret.observaciones}</td></tr>`;
+                tabla.innerHTML += fila;
             });
         }
-
-        function exportarCSV() {
-            let csv = "ID,Fecha,Fecha de Registro,Monto,Observaciones\n";
-            document.querySelectorAll("tbody tr").forEach(row => {
-                const cols = [...row.cells].map(td => td.textContent.replace(/,/g, ""));
-                csv += cols.join(",") + "\n";
-            });
-            const blob = new Blob([csv], { type: "text/csv" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "retiros.csv";
-            link.click();
-        }
-
+        
         function actualizarGrafico() {
-            const fechas = [];
-            const montos = [];
-            document.querySelectorAll("tbody tr").forEach(row => {
-                fechas.push(row.cells[1].textContent);
-                montos.push(parseFloat(row.cells[3].textContent));
-            });
-
-            const ctx = document.getElementById("retirosChart").getContext("2d");
-            new Chart(ctx, {
-                type: "bar",
+            let ctx = document.getElementById('graficoRetiros').getContext('2d');
+            let etiquetas = retiros.map(ret => ret.fecha);
+            let datos = retiros.map(ret => ret.monto);
+            
+            if (window.miGrafico) {
+                window.miGrafico.destroy();
+            }
+            
+            window.miGrafico = new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: fechas,
+                    labels: etiquetas,
                     datasets: [{
-                        label: "Montos de Retiros",
-                        data: montos,
-                        backgroundColor: "#4CAF50"
+                        label: 'Monto de Retiros',
+                        data: datos,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
                     }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
                 }
             });
         }
