@@ -10,7 +10,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
         th { background-color: #f4f4f4; }
-        input, button { padding: 10px; margin: 5px; }
+        input, select, button { padding: 10px; margin: 5px; }
     </style>
 </head>
 <body>
@@ -20,8 +20,14 @@
     <label>Motivo de Retiro: <input type="text" id="motivo_retiro" required></label>
     <label>Fecha de Retiro: <input type="date" id="fecha_retiro" required></label>
     <label>Fecha de Reporte en IT Manager: <input type="date" id="fecha_reporte" required></label>
+    <label>Punto de Venta: <input type="text" id="punto_venta" required></label>
+    <label>Regional: <input type="text" id="regional" required></label>
     <label>Observaciones: <input type="text" id="observaciones"></label>
     <button onclick="agregarRetiro()">Agregar Retiro</button>
+    
+    <h3>Filtrar Retiros</h3>
+    <label>Filtrar por Punto de Venta: <input type="text" id="filtro_punto" oninput="actualizarTabla()"></label>
+    <label>Filtrar por Regional: <input type="text" id="filtro_regional" oninput="actualizarTabla()"></label>
     
     <table>
         <thead>
@@ -31,6 +37,8 @@
                 <th>Motivo de Retiro</th>
                 <th>Fecha de Retiro</th>
                 <th>Fecha de Reporte en IT Manager</th>
+                <th>Punto de Venta</th>
+                <th>Regional</th>
                 <th>Observaciones</th>
             </tr>
         </thead>
@@ -48,18 +56,15 @@
             let motivo_retiro = document.getElementById('motivo_retiro').value;
             let fecha_retiro = document.getElementById('fecha_retiro').value;
             let fecha_reporte = document.getElementById('fecha_reporte').value;
+            let punto_venta = document.getElementById('punto_venta').value;
+            let regional = document.getElementById('regional').value;
             let observaciones = document.getElementById('observaciones').value;
             
-            if (nombre && centro_costo && motivo_retiro && fecha_retiro && fecha_reporte) {
-                retiros.push({ nombre, centro_costo, motivo_retiro, fecha_retiro, fecha_reporte, observaciones });
+            if (nombre && centro_costo && motivo_retiro && fecha_retiro && fecha_reporte && punto_venta && regional) {
+                retiros.push({ nombre, centro_costo, motivo_retiro, fecha_retiro, fecha_reporte, punto_venta, regional, observaciones });
                 actualizarTabla();
                 actualizarGrafico();
-                document.getElementById('nombre').value = '';
-                document.getElementById('centro_costo').value = '';
-                document.getElementById('motivo_retiro').value = '';
-                document.getElementById('fecha_retiro').value = '';
-                document.getElementById('fecha_reporte').value = '';
-                document.getElementById('observaciones').value = '';
+                document.querySelectorAll('input').forEach(input => input.value = '');
             } else {
                 alert("Por favor, completa todos los campos requeridos.");
             }
@@ -67,9 +72,14 @@
         
         function actualizarTabla() {
             let tabla = document.getElementById('tabla-retiros');
+            let filtroPunto = document.getElementById('filtro_punto').value.toLowerCase();
+            let filtroRegional = document.getElementById('filtro_regional').value.toLowerCase();
             tabla.innerHTML = '';
-            retiros.forEach(ret => {
-                let fila = `<tr><td>${ret.nombre}</td><td>${ret.centro_costo}</td><td>${ret.motivo_retiro}</td><td>${ret.fecha_retiro}</td><td>${ret.fecha_reporte}</td><td>${ret.observaciones}</td></tr>`;
+            retiros.filter(ret => 
+                ret.punto_venta.toLowerCase().includes(filtroPunto) &&
+                ret.regional.toLowerCase().includes(filtroRegional)
+            ).forEach(ret => {
+                let fila = `<tr><td>${ret.nombre}</td><td>${ret.centro_costo}</td><td>${ret.motivo_retiro}</td><td>${ret.fecha_retiro}</td><td>${ret.fecha_reporte}</td><td>${ret.punto_venta}</td><td>${ret.regional}</td><td>${ret.observaciones}</td></tr>`;
                 tabla.innerHTML += fila;
             });
         }
