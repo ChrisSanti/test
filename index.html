@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retiros del Mes</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid black; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        textarea { width: 100%; }
+        canvas { max-width: 600px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Retiros Reportados del Mes</h2>
+    <label for="filtroFecha">Filtrar por fecha:</label>
+    <input type="date" id="filtroFecha" onchange="filtrarPorFecha()">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Fecha de Registro</th>
+                <th>Monto</th>
+                <th>Observaciones</th>
+            </tr>
+        </thead>
+        <tbody id="retirosBody">
+            <tr>
+                <td>1</td>
+                <td>2025-02-07</td>
+                <td>2025-02-01</td>
+                <td>500</td>
+                <td><textarea onchange="guardarObservacion(1, this.value)"></textarea></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2025-02-06</td>
+                <td>2025-02-02</td>
+                <td>750</td>
+                <td><textarea onchange="guardarObservacion(2, this.value)"></textarea></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button onclick="exportarCSV()">Exportar a CSV</button>
+
+    <canvas id="retirosChart"></canvas>
+
+    <script>
+        function guardarObservacion(id, observacion) {
+            localStorage.setItem(`observacion_${id}`, observacion);
+            alert("Observación guardada");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll("textarea").forEach((textarea, index) => {
+                const id = index + 1;
+                const obsGuardada = localStorage.getItem(`observacion_${id}`);
+                if (obsGuardada) textarea.value = obsGuardada;
+            });
+            actualizarGrafico();
+        });
+
+        function filtrarPorFecha() {
+            const filtro = document.getElementById("filtroFecha").value;
+            document.querySelectorAll("tbody tr").forEach(row => {
+                const fecha = row.cells[1].textContent;
+                row.style.display = fecha === filtro || filtro === "" ? "" : "none";
+            });
+        }
+
+        function exportarCSV() {
+            let csv = "ID,Fecha,Fecha de Registro,Monto,Observaciones\n";
+            document.querySelectorAll("tbody tr").forEach(row => {
+                const cols = [...row.cells].map(td => td.textContent.replace(/,/g, ""));
+                csv += cols.join(",") + "\n";
+            });
+            const blob = new Blob([csv], { type: "text/csv" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "retiros.csv";
+            link.click();
+        }
+
+        function actualizarGrafico() {
+            const fechas = [];
+            const montos = [];
+            document.querySelectorAll("tbody tr").forEach(row => {
+                fechas.push(row.cells[1].textContent);
+                montos.push(parseFloat(row.cells[3].textContent));
+            });
+
+            const ctx = document.getElementById("retirosChart").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: fechas,
+                    datasets: [{
+                        label: "Montos de Retiros",
+                        data: montos,
+                        backgroundColor: "#4CAF50"
+                    }]
+                }
+            });
+        }
+    </script>
+</body>
+</html>
