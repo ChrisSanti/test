@@ -16,6 +16,7 @@
 <body>
     <h2>Registro de Retiros</h2>
     <label>Nombre: <input type="text" id="nombre" required></label>
+    <label>Cédula: <input type="text" id="cedula" required></label>
     <label>Centro de Costo: <input type="text" id="centro_costo" required></label>
     <label>Motivo de Retiro: <input type="text" id="motivo_retiro" required></label>
     <label>Fecha de Retiro: <input type="date" id="fecha_retiro" required></label>
@@ -33,6 +34,7 @@
         <thead>
             <tr>
                 <th>Nombre</th>
+                <th>Cédula</th>
                 <th>Centro de Costo</th>
                 <th>Motivo de Retiro</th>
                 <th>Fecha de Retiro</th>
@@ -52,6 +54,7 @@
         
         function agregarRetiro() {
             let nombre = document.getElementById('nombre').value;
+            let cedula = document.getElementById('cedula').value;
             let centro_costo = document.getElementById('centro_costo').value;
             let motivo_retiro = document.getElementById('motivo_retiro').value;
             let fecha_retiro = document.getElementById('fecha_retiro').value;
@@ -60,8 +63,8 @@
             let regional = document.getElementById('regional').value;
             let observaciones = document.getElementById('observaciones').value;
             
-            if (nombre && centro_costo && motivo_retiro && fecha_retiro && fecha_reporte && punto_venta && regional) {
-                retiros.push({ nombre, centro_costo, motivo_retiro, fecha_retiro, fecha_reporte, punto_venta, regional, observaciones });
+            if (nombre && cedula && centro_costo && motivo_retiro && fecha_retiro && fecha_reporte && punto_venta && regional) {
+                retiros.push({ nombre, cedula, centro_costo, motivo_retiro, fecha_retiro, fecha_reporte, punto_venta, regional, observaciones });
                 actualizarTabla();
                 actualizarGrafico();
                 document.querySelectorAll('input').forEach(input => input.value = '');
@@ -79,7 +82,7 @@
                 ret.punto_venta.toLowerCase().includes(filtroPunto) &&
                 ret.regional.toLowerCase().includes(filtroRegional)
             ).forEach(ret => {
-                let fila = `<tr><td>${ret.nombre}</td><td>${ret.centro_costo}</td><td>${ret.motivo_retiro}</td><td>${ret.fecha_retiro}</td><td>${ret.fecha_reporte}</td><td>${ret.punto_venta}</td><td>${ret.regional}</td><td>${ret.observaciones}</td></tr>`;
+                let fila = `<tr><td>${ret.nombre}</td><td>${ret.cedula}</td><td>${ret.centro_costo}</td><td>${ret.motivo_retiro}</td><td>${ret.fecha_retiro}</td><td>${ret.fecha_reporte}</td><td>${ret.punto_venta}</td><td>${ret.regional}</td><td>${ret.observaciones}</td></tr>`;
                 tabla.innerHTML += fila;
             });
         }
