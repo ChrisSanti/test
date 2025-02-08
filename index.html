@@ -3,137 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Retiros</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>San Valentín</title>
     <style>
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid black; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        body {
+            background-image: url('https://source.unsplash.com/1600x900/?love,romantic');
+            background-size: cover;
+            background-position: center;
+            text-align: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .yes {
+            background-color: #ff4d6d;
+            color: white;
+        }
+        .no {
+            background-color: #444;
+            color: white;
+        }
+        .image-container {
+            margin-top: 20px;
+        }
+        .image-container img {
+            width: 300px;
+            border-radius: 10px;
+        }
     </style>
-</head>
-<body>
-    <h2>Reporte de Retiros</h2>
-    <form id="retiroForm">
-        <label>Nombre: <input type="text" id="nombre"></label>
-        <label>Cédula: <input type="text" id="cedula"></label>
-        <label>Centro de Costo: <input type="text" id="centroCosto"></label>
-        <label>Motivo de Retiro: <input type="text" id="motivo"></label>
-        <label>Fecha de Retiro: <input type="date" id="fechaRetiro"></label>
-        <label>Fecha de Reporte IT Manager: <input type="date" id="fechaReporte"></label>
-        <label>Punto de Venta: <input type="text" id="pdv"></label>
-        <label>Regional: <input type="text" id="regional"></label>
-        <label>Observaciones: <input type="text" id="observaciones"></label>
-        <button type="button" onclick="agregarRetiro()">Agregar Retiro</button>
-    </form>
-    
-    <h3>Filtrar por:</h3>
-    <label>Punto de Venta: <input type="text" id="filtroPdv" oninput="filtrarDatos()"></label>
-    <label>Regional: <input type="text" id="filtroRegional" oninput="filtrarDatos()"></label>
-    
-    <table id="tablaRetiros">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Cédula</th>
-                <th>Centro de Costo</th>
-                <th>Motivo</th>
-                <th>Fecha de Retiro</th>
-                <th>Fecha de Reporte</th>
-                <th>Punto de Venta</th>
-                <th>Regional</th>
-                <th>Observaciones</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <canvas id="graficoRetiros"></canvas>
-    
     <script>
-        let retiros = [];
-
-        function agregarRetiro() {
-            let nuevoRetiro = {
-                nombre: document.getElementById("nombre").value,
-                cedula: document.getElementById("cedula").value,
-                centroCosto: document.getElementById("centroCosto").value,
-                motivo: document.getElementById("motivo").value,
-                fechaRetiro: document.getElementById("fechaRetiro").value,
-                fechaReporte: document.getElementById("fechaReporte").value,
-                pdv: document.getElementById("pdv").value,
-                regional: document.getElementById("regional").value,
-                observaciones: document.getElementById("observaciones").value
-            };
-            retiros.push(nuevoRetiro);
-            actualizarTabla();
-            actualizarGrafico();
-        }
-
-        function actualizarTabla() {
-            let tbody = document.querySelector("#tablaRetiros tbody");
-            tbody.innerHTML = "";
-            retiros.forEach((retiro, index) => {
-                let fila = `<tr>
-                    <td>${retiro.nombre}</td>
-                    <td>${retiro.cedula}</td>
-                    <td>${retiro.centroCosto}</td>
-                    <td>${retiro.motivo}</td>
-                    <td>${retiro.fechaRetiro}</td>
-                    <td>${retiro.fechaReporte}</td>
-                    <td>${retiro.pdv}</td>
-                    <td>${retiro.regional}</td>
-                    <td>${retiro.observaciones}</td>
-                </tr>`;
-                tbody.innerHTML += fila;
-            });
-        }
-
-        function actualizarGrafico() {
-            let conteo = {};
-            retiros.forEach(retiro => {
-                conteo[retiro.pdv] = (conteo[retiro.pdv] || 0) + 1;
-            });
-            
-            let ctx = document.getElementById("graficoRetiros").getContext("2d");
-            if (window.grafico) window.grafico.destroy();
-            window.grafico = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: Object.keys(conteo),
-                    datasets: [{
-                        label: "Retiros por PDV",
-                        data: Object.values(conteo),
-                        backgroundColor: "#4CAF50"
-                    }]
-                }
-            });
-        }
-
-        function filtrarDatos() {
-            let filtroPdv = document.getElementById("filtroPdv").value.toLowerCase();
-            let filtroRegional = document.getElementById("filtroRegional").value.toLowerCase();
-            let tbody = document.querySelector("#tablaRetiros tbody");
-            tbody.innerHTML = "";
-            let retirosFiltrados = retiros.filter(retiro => 
-                retiro.pdv.toLowerCase().includes(filtroPdv) && 
-                retiro.regional.toLowerCase().includes(filtroRegional)
-            );
-            retirosFiltrados.forEach(retiro => {
-                let fila = `<tr>
-                    <td>${retiro.nombre}</td>
-                    <td>${retiro.cedula}</td>
-                    <td>${retiro.centroCosto}</td>
-                    <td>${retiro.motivo}</td>
-                    <td>${retiro.fechaRetiro}</td>
-                    <td>${retiro.fechaReporte}</td>
-                    <td>${retiro.pdv}</td>
-                    <td>${retiro.regional}</td>
-                    <td>${retiro.observaciones}</td>
-                </tr>`;
-                tbody.innerHTML += fila;
-            });
-            actualizarGrafico();
+        function showImage(type) {
+            let imageContainer = document.getElementById('image-container');
+            if (type === 'yes') {
+                imageContainer.innerHTML = '<img src="https://source.unsplash.com/300x300/?love" alt="Imagen de amor">';
+            } else {
+                imageContainer.innerHTML = '<img src="https://source.unsplash.com/300x300/?crying" alt="Imagen triste">';
+            }
         }
     </script>
+</head>
+<body>
+    <div class="container">
+        <h1>¿Quieres ser mi San Valentín? ??</h1>
+        <button class="yes" onclick="showImage('yes')">Sí</button>
+        <button class="no" onclick="showImage('no')">No</button>
+        <div id="image-container" class="image-container"></div>
+    </div>
 </body>
 </html>
