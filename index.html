@@ -15,16 +15,22 @@
 </head>
 <body>
     <h2>Registro de Retiros</h2>
-    <label>Monto: <input type="number" id="monto" required></label>
-    <label>Fecha: <input type="date" id="fecha" required></label>
+    <label>Nombre: <input type="text" id="nombre" required></label>
+    <label>Centro de Costo: <input type="text" id="centro_costo" required></label>
+    <label>Motivo de Retiro: <input type="text" id="motivo_retiro" required></label>
+    <label>Fecha de Retiro: <input type="date" id="fecha_retiro" required></label>
+    <label>Fecha de Reporte en IT Manager: <input type="date" id="fecha_reporte" required></label>
     <label>Observaciones: <input type="text" id="observaciones"></label>
     <button onclick="agregarRetiro()">Agregar Retiro</button>
     
     <table>
         <thead>
             <tr>
-                <th>Monto</th>
-                <th>Fecha</th>
+                <th>Nombre</th>
+                <th>Centro de Costo</th>
+                <th>Motivo de Retiro</th>
+                <th>Fecha de Retiro</th>
+                <th>Fecha de Reporte en IT Manager</th>
                 <th>Observaciones</th>
             </tr>
         </thead>
@@ -37,16 +43,22 @@
         let retiros = [];
         
         function agregarRetiro() {
-            let monto = document.getElementById('monto').value;
-            let fecha = document.getElementById('fecha').value;
+            let nombre = document.getElementById('nombre').value;
+            let centro_costo = document.getElementById('centro_costo').value;
+            let motivo_retiro = document.getElementById('motivo_retiro').value;
+            let fecha_retiro = document.getElementById('fecha_retiro').value;
+            let fecha_reporte = document.getElementById('fecha_reporte').value;
             let observaciones = document.getElementById('observaciones').value;
             
-            if (monto && fecha) {
-                retiros.push({ monto: parseFloat(monto), fecha, observaciones });
+            if (nombre && centro_costo && motivo_retiro && fecha_retiro && fecha_reporte) {
+                retiros.push({ nombre, centro_costo, motivo_retiro, fecha_retiro, fecha_reporte, observaciones });
                 actualizarTabla();
                 actualizarGrafico();
-                document.getElementById('monto').value = '';
-                document.getElementById('fecha').value = '';
+                document.getElementById('nombre').value = '';
+                document.getElementById('centro_costo').value = '';
+                document.getElementById('motivo_retiro').value = '';
+                document.getElementById('fecha_retiro').value = '';
+                document.getElementById('fecha_reporte').value = '';
                 document.getElementById('observaciones').value = '';
             } else {
                 alert("Por favor, completa todos los campos requeridos.");
@@ -57,15 +69,15 @@
             let tabla = document.getElementById('tabla-retiros');
             tabla.innerHTML = '';
             retiros.forEach(ret => {
-                let fila = `<tr><td>${ret.monto}</td><td>${ret.fecha}</td><td>${ret.observaciones}</td></tr>`;
+                let fila = `<tr><td>${ret.nombre}</td><td>${ret.centro_costo}</td><td>${ret.motivo_retiro}</td><td>${ret.fecha_retiro}</td><td>${ret.fecha_reporte}</td><td>${ret.observaciones}</td></tr>`;
                 tabla.innerHTML += fila;
             });
         }
         
         function actualizarGrafico() {
             let ctx = document.getElementById('graficoRetiros').getContext('2d');
-            let etiquetas = retiros.map(ret => ret.fecha);
-            let datos = retiros.map(ret => ret.monto);
+            let etiquetas = retiros.map(ret => ret.fecha_retiro);
+            let datos = retiros.map((_, index) => index + 1);
             
             if (window.miGrafico) {
                 window.miGrafico.destroy();
@@ -76,7 +88,7 @@
                 data: {
                     labels: etiquetas,
                     datasets: [{
-                        label: 'Monto de Retiros',
+                        label: 'Cantidad de Retiros',
                         data: datos,
                         backgroundColor: 'rgba(54, 162, 235, 0.5)',
                         borderColor: 'rgba(54, 162, 235, 1)',
