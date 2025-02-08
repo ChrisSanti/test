@@ -44,17 +44,23 @@
         }
         .image-container img {
             width: 300px;
+            height: 300px;
             border-radius: 10px;
         }
     </style>
     <script>
         function showImage(type) {
             let imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = ''; // Limpiar contenido anterior
+            let img = document.createElement('img');
             if (type === 'yes') {
-                imageContainer.innerHTML = '<img src="https://source.unsplash.com/300x300/?love" alt="Imagen de amor">';
+                img.src = 'https://source.unsplash.com/300x300/?love,heart';
+                img.alt = 'Imagen de amor';
             } else {
-                imageContainer.innerHTML = '<img src="https://source.unsplash.com/300x300/?crying" alt="Imagen triste">';
+                img.src = 'https://source.unsplash.com/300x300/?sad,crying';
+                img.alt = 'Imagen triste';
             }
+            imageContainer.appendChild(img);
         }
     </script>
 </head>
