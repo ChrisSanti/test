@@ -3,117 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Retiros</title>
+    <title>Reporte de Retiros PDV</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background-color: #f4f4f4; }
-        input, select, button { padding: 10px; margin: 5px; }
-    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h2>Registro de Retiros</h2>
-    <label>Nombre: <input type="text" id="nombre" required></label>
-    <label>Cédula: <input type="text" id="cedula" required></label>
-    <label>Centro de Costo: <input type="text" id="centro_costo" required></label>
-    <label>Motivo de Retiro: <input type="text" id="motivo_retiro" required></label>
-    <label>Fecha de Retiro: <input type="date" id="fecha_retiro" required></label>
-    <label>Fecha de Reporte en IT Manager: <input type="date" id="fecha_reporte" required></label>
-    <label>Punto de Venta: <input type="text" id="punto_venta" required></label>
-    <label>Regional: <input type="text" id="regional" required></label>
-    <label>Observaciones: <input type="text" id="observaciones"></label>
-    <button onclick="agregarRetiro()">Agregar Retiro</button>
-    
-    <h3>Filtrar Retiros</h3>
-    <label>Filtrar por Punto de Venta: <input type="text" id="filtro_punto" oninput="actualizarTabla()"></label>
-    <label>Filtrar por Regional: <input type="text" id="filtro_regional" oninput="actualizarTabla()"></label>
-    
-    <table>
+    <form id="retiroForm">
+        <label>Cédula:</label>
+        <input type="text" id="cedula" required><br>
+        <label>Nombre:</label>
+        <input type="text" id="nombre" required><br>
+        <label>Centro de Costo:</label>
+        <input type="text" id="centroCosto" required><br>
+        <label>Motivo de Retiro:</label>
+        <input type="text" id="motivoRetiro" required><br>
+        <label>Fecha de Retiro:</label>
+        <input type="date" id="fechaRetiro" required><br>
+        <label>Fecha de Reporte en IT Manager:</label>
+        <input type="date" id="fechaReporte" required><br>
+        <label>Punto de Venta:</label>
+        <input type="text" id="puntoVenta" required><br>
+        <label>Regional:</label>
+        <input type="text" id="regional" required><br>
+        <label>Observaciones:</label>
+        <textarea id="observaciones"></textarea><br>
+        <button type="submit">Registrar Retiro</button>
+    </form>
+
+    <h2>Historial de Retiros</h2>
+    <label>Filtrar por Punto de Venta:</label>
+    <input type="text" id="filtroPuntoVenta"><br>
+    <label>Filtrar por Regional:</label>
+    <input type="text" id="filtroRegional"><br>
+    <button onclick="filtrarRetiros()">Filtrar</button>
+
+    <table border="1">
         <thead>
             <tr>
-                <th>Nombre</th>
                 <th>Cédula</th>
+                <th>Nombre</th>
                 <th>Centro de Costo</th>
                 <th>Motivo de Retiro</th>
                 <th>Fecha de Retiro</th>
-                <th>Fecha de Reporte en IT Manager</th>
+                <th>Fecha de Reporte</th>
                 <th>Punto de Venta</th>
                 <th>Regional</th>
                 <th>Observaciones</th>
             </tr>
         </thead>
-        <tbody id="tabla-retiros"></tbody>
+        <tbody id="tablaRetiros"></tbody>
     </table>
-    
-    <canvas id="graficoRetiros" width="400" height="200"></canvas>
-    
+
+    <h2>Gráfica de Retiros</h2>
+    <canvas id="graficaRetiros"></canvas>
+
     <script>
         let retiros = [];
-        
-        function agregarRetiro() {
-            let nombre = document.getElementById('nombre').value;
-            let cedula = document.getElementById('cedula').value;
-            let centro_costo = document.getElementById('centro_costo').value;
-            let motivo_retiro = document.getElementById('motivo_retiro').value;
-            let fecha_retiro = document.getElementById('fecha_retiro').value;
-            let fecha_reporte = document.getElementById('fecha_reporte').value;
-            let punto_venta = document.getElementById('punto_venta').value;
-            let regional = document.getElementById('regional').value;
-            let observaciones = document.getElementById('observaciones').value;
+
+        document.getElementById('retiroForm').addEventListener('submit', function(event) {
+            event.preventDefault();
             
-            if (nombre && cedula && centro_costo && motivo_retiro && fecha_retiro && fecha_reporte && punto_venta && regional) {
-                retiros.push({ nombre, cedula, centro_costo, motivo_retiro, fecha_retiro, fecha_reporte, punto_venta, regional, observaciones });
-                actualizarTabla();
-                actualizarGrafico();
-                document.querySelectorAll('input').forEach(input => input.value = '');
-            } else {
-                alert("Por favor, completa todos los campos requeridos.");
-            }
-        }
-        
+            let retiro = {
+                cedula: document.getElementById('cedula').value,
+                nombre: document.getElementById('nombre').value,
+                centroCosto: document.getElementById('centroCosto').value,
+                motivoRetiro: document.getElementById('motivoRetiro').value,
+                fechaRetiro: document.getElementById('fechaRetiro').value,
+                fechaReporte: document.getElementById('fechaReporte').value,
+                puntoVenta: document.getElementById('puntoVenta').value,
+                regional: document.getElementById('regional').value,
+                observaciones: document.getElementById('observaciones').value
+            };
+
+            retiros.push(retiro);
+            actualizarTabla();
+            actualizarGrafico();
+        });
+
         function actualizarTabla() {
-            let tabla = document.getElementById('tabla-retiros');
-            let filtroPunto = document.getElementById('filtro_punto').value.toLowerCase();
-            let filtroRegional = document.getElementById('filtro_regional').value.toLowerCase();
+            let tabla = document.getElementById('tablaRetiros');
             tabla.innerHTML = '';
-            retiros.filter(ret => 
-                ret.punto_venta.toLowerCase().includes(filtroPunto) &&
-                ret.regional.toLowerCase().includes(filtroRegional)
-            ).forEach(ret => {
-                let fila = `<tr><td>${ret.nombre}</td><td>${ret.cedula}</td><td>${ret.centro_costo}</td><td>${ret.motivo_retiro}</td><td>${ret.fecha_retiro}</td><td>${ret.fecha_reporte}</td><td>${ret.punto_venta}</td><td>${ret.regional}</td><td>${ret.observaciones}</td></tr>`;
-                tabla.innerHTML += fila;
+            retiros.forEach(ret => {
+                let row = `<tr>
+                    <td>${ret.cedula}</td>
+                    <td>${ret.nombre}</td>
+                    <td>${ret.centroCosto}</td>
+                    <td>${ret.motivoRetiro}</td>
+                    <td>${ret.fechaRetiro}</td>
+                    <td>${ret.fechaReporte}</td>
+                    <td>${ret.puntoVenta}</td>
+                    <td>${ret.regional}</td>
+                    <td>${ret.observaciones}</td>
+                </tr>`;
+                tabla.innerHTML += row;
             });
         }
-        
+
         function actualizarGrafico() {
-            let ctx = document.getElementById('graficoRetiros').getContext('2d');
-            let etiquetas = retiros.map(ret => ret.fecha_retiro);
-            let datos = retiros.map((_, index) => index + 1);
-            
-            if (window.miGrafico) {
-                window.miGrafico.destroy();
-            }
-            
-            window.miGrafico = new Chart(ctx, {
+            let ctx = document.getElementById('graficaRetiros').getContext('2d');
+            let fechas = retiros.map(ret => ret.fechaRetiro);
+            let cantidades = fechas.reduce((acc, fecha) => {
+                acc[fecha] = (acc[fecha] || 0) + 1;
+                return acc;
+            }, {});
+
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: etiquetas,
+                    labels: Object.keys(cantidades),
                     datasets: [{
                         label: 'Cantidad de Retiros',
-                        data: datos,
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
+                        data: Object.values(cantidades),
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 1
                     }]
                 },
                 options: {
-                    responsive: true,
                     scales: {
-                        y: { beginAtZero: true }
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
+            });
+        }
+
+        function filtrarRetiros() {
+            let filtroPunto = document.getElementById('filtroPuntoVenta').value.toLowerCase();
+            let filtroReg = document.getElementById('filtroRegional').value.toLowerCase();
+
+            let tabla = document.getElementById('tablaRetiros');
+            tabla.innerHTML = '';
+            retiros.filter(ret => 
+                ret.puntoVenta.toLowerCase().includes(filtroPunto) && 
+                ret.regional.toLowerCase().includes(filtroReg)
+            ).forEach(ret => {
+                let row = `<tr>
+                    <td>${ret.cedula}</td>
+                    <td>${ret.nombre}</td>
+                    <td>${ret.centroCosto}</td>
+                    <td>${ret.motivoRetiro}</td>
+                    <td>${ret.fechaRetiro}</td>
+                    <td>${ret.fechaReporte}</td>
+                    <td>${ret.puntoVenta}</td>
+                    <td>${ret.regional}</td>
+                    <td>${ret.observaciones}</td>
+                </tr>`;
+                tabla.innerHTML += row;
             });
         }
     </script>
